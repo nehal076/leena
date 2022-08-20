@@ -38,15 +38,14 @@ class LeenaGame extends FlameGame with HasCollisionDetection {
           position: Vector2(obj.x, obj.y),
         ),
       );
-      print(obj.x);
     }
 
     camera.viewport = FixedResolutionViewport(Vector2(mapWidth, mapHeight));
 
     leena
       ..sprite = await loadSprite('girl.png')
-      ..size = Vector2.all(200)
-      ..position = Vector2(200, 90);
+      ..size = Vector2(80, 100)
+      ..position = Vector2(340, 90);
 
     add(leena);
   }
@@ -55,7 +54,7 @@ class LeenaGame extends FlameGame with HasCollisionDetection {
   void update(double dt) {
     super.update(dt);
 
-    if (leena.y < size[1] - leena.height) {
+    if (!leena.onGround) {
       velocity.y += gravity;
       leena.position.y += velocity.y * dt;
     }
