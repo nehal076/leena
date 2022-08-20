@@ -1,4 +1,5 @@
 import 'package:flame/game.dart';
+import 'package:flame/input.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flutter/material.dart';
 import 'package:leena/actors/leena.dart';
@@ -9,9 +10,12 @@ void main() {
   runApp(GameWidget(game: LeenaGame()));
 }
 
-class LeenaGame extends FlameGame with HasCollisionDetection {
+class LeenaGame extends FlameGame with HasCollisionDetection, TapDetector {
   Leena leena = Leena();
-  double gravity = 1.8;
+  final double gravity = 2.5;
+  final double pushSpeed = 100;
+  final double jumpForce = 130;
+
   Vector2 velocity = Vector2(0, 0);
   late TiledComponent homeMap;
 
@@ -45,7 +49,7 @@ class LeenaGame extends FlameGame with HasCollisionDetection {
     leena
       ..sprite = await loadSprite('girl.png')
       ..size = Vector2(80, 100)
-      ..position = Vector2(340, 90);
+      ..position = Vector2(350, 90);
 
     add(leena);
   }
@@ -56,7 +60,38 @@ class LeenaGame extends FlameGame with HasCollisionDetection {
 
     if (!leena.onGround) {
       velocity.y += gravity;
-      leena.position.y += velocity.y * dt;
+    }
+    leena.position += velocity * dt;
+  }
+
+  @override
+  void onTapDown(TapDownInfo info) {
+    super.onTapDown(info);
+
+    if (leena.onGround) {
+      if (info.eventPosition.game.x < 100) {
+        print('move left');
+        if (leena.facingRight) {
+          leena.facingRight = false;
+          leena.flipHorizontallyAroundCenter();
+        }
+        leena.x -= 5;
+        velocity.x -= pushSpeed;
+      } else if (info.eventPosition.game.x > size[0] - 100) {
+        print('move right');
+        if (!leena.facingRight) {
+          leena.facingRight = true;
+          leena.flipHorizontallyAroundCenter();
+        }
+        leena.x += 5;
+        velocity.x += pushSpeed;
+      }
+
+      if (info.eventPosition.game.y < 100) {
+        print('jump');
+        leena.y -= 10;
+        velocity.y = -jumpForce;
+      }
     }
   }
 }

@@ -7,9 +7,11 @@ class Leena extends SpriteComponent
     with CollisionCallbacks, HasGameRef<LeenaGame> {
   Leena() : super() {
     debugMode = true;
+    anchor = Anchor.bottomCenter;
   }
 
   bool onGround = false;
+  bool facingRight = true;
 
   @override
   Future<void> onLoad() async {
@@ -22,9 +24,34 @@ class Leena extends SpriteComponent
     super.onCollision(intersectionPoints, other);
 
     if (other is Ground) {
-      gameRef.velocity.y = 0;
-      print('hit ground');
-      onGround = true;
+      if (gameRef.velocity.y > 0) {
+        if (intersectionPoints.length == 2) {
+          var x1 = intersectionPoints.first[0];
+          var x2 = intersectionPoints.last[0];
+
+          if ((x1 - x2).abs() < 2) {
+            gameRef.velocity.y = 100;
+          } else {
+            gameRef.velocity.y = 0;
+            onGround = true;
+          }
+        }
+      } else {
+        if (gameRef.velocity.x != 0) {
+          for (var point in intersectionPoints) {
+            if (y - 5 >= point[1]) {
+              print('hit on side of ground');
+              gameRef.velocity.x = 0;
+            }
+          }
+        }
+      }
     }
+  }
+
+  @override
+  void onCollisionEnd(PositionComponent other) {
+    super.onCollisionEnd(other);
+    onGround = false;
   }
 }
